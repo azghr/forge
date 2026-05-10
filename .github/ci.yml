@@ -1,0 +1,31 @@
+name: Go Modules Build
+on: [push]
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.set-modules.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-modules
+        run: |
+          modules=$(find . -name go.mod -exec dirname {} \; | sed 's|^\./||' | jq -R -s -c 'split("\n")[:-1]')
+          echo "modules=$modules" >> "$GITHUB_OUTPUT"
+  test:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [1.21, 1.22]
+        pkg: ${{ fromJson(needs.discover.outputs.modules) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with: {go-version: ${{ matrix.go }}}
+      - name: Cache modules
+        uses: actions/cache@v3
+        with: {path: ~/.cache/go-build, key: ${{ runner.os }}-go-${{ matrix.go }}-${{ matrix.pkg }}}
+      - name: Run tests
+        working-directory: ${{ matrix.pkg }}
+        run: go test ./... -v

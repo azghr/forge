@@ -1,24 +1,33 @@
 # atomicfile
 
-Atomic file writes for Go using a temp-file + rename pattern.
+Atomic file operations for Go: writing or replacing files without leaving
+partial data on failure.
 
 ## Problem
 
 Writing to a file directly risks leaving partial or corrupted data if the
-write is interrupted (crash, power loss, disk full). This package ensures
-that a file's content is always **fully written or unchanged** — never
-in-between. It uses the standard Unix pattern: write to a temporary file in
-the same directory, fsync, then atomically rename over the target.
+write is interrupted (crash, power loss, disk full). This package wraps the
+standard Unix pattern — write to a temporary file, fsync, then atomically
+rename over the target — so that the destination is either fully updated or
+fully unchanged.
+
+On POSIX, `os.Rename` is atomic. On Windows, `os.Rename` is not fully
+atomic; consider platform-specific calls (`MoveFileEx`) if strict atomicity
+is needed there.
 
 ## Quick start
 
 ```go
 import "github.com/azghr/forge/atomicfile"
 
-err := atomicfile.Write("/tmp/data.txt", []byte("hello world"))
-if err != nil {
+data := bytes.NewBufferString("important")
+if err := atomicfile.WriteFile("/tmp/config.txt", data); err != nil {
     log.Fatal(err)
 }
+// config.txt is fully written or untouched.
+
+// Atomic replacement:
+atomicfile.ReplaceFile("/tmp/new.txt", "/tmp/config.txt")
 ```
 
 ## API
@@ -27,36 +36,36 @@ if err != nil {
 
 | Function | Description |
 |----------|-------------|
-| `Write(path, data, opts...)` | Write `data` atomically to `path`. |
-| `WriteContext(ctx, path, data, opts...)` | Like `Write` with context cancellation. |
-| `WriteReader(ctx, path, r, opts...)` | Atomically write from an `io.Reader`. |
-
-### Types
-
-- **`WriteError`** — returned on write failures; fields `Op` (string) and
-  `Err` (underlying error). Use `errors.As` to inspect.
+| `WriteFile(filename, r, opts...)` | Atomically write `io.Reader` to `filename`. |
+| `ReplaceFile(source, dest)` | Atomically replace `dest` with `source` file. |
 
 ### Options
 
 - **`WithFileMode(mode)`** — set file permission bits (default: `0644`).
-- **`WithoutFSync()`** — skip the fsync before rename (faster, less durable).
+- **`WithoutFSync()`** — skip fsync before rename (faster, less durable).
 
 ### Error semantics
 
 - On success: `nil`.
-- On context cancellation before rename: `ErrCancelled`.
-- On I/O failure: `*WriteError` wrapping the underlying error.
+- On I/O failure: `*WriteError` wrapping the underlying error. `Op` identifies
+  the failing step (`"create"`, `"write"`, `"fsync"`, `"close"`, `"rename"`,
+  `"sync-dir"`). Use `errors.As` to inspect.
+- `WriteFile` removes the temp file on failure, leaving the original intact.
 
 ## Performance
 
-| Operation | Cost | Notes |
-|-----------|------|-------|
-| Write     | O(n) | Full data copy to temp file + rename + optional dir fsync |
-| WriteReader | O(n) | Streaming write from reader |
+- **WriteFile** — O(n) in file size. Data is copied once (temp write) then
+  renamed (metadata only).
+- **ReplaceFile** — O(1) (just a rename + optional dir fsync).
 
 Benchmarks (4 KB data on Apple M1 Max):
-- With fsync: ~75 µs
-- Without fsync: ~30 µs
+- With fsync: ~10 ms
+- Without fsync: ~5 ms
 
 Concurrency: safe for concurrent writes to different paths. Concurrent writes
 to the same path are safe but one writer's data will win (last rename wins).
+
+## Cross-platform
+
+On POSIX, rename is atomic. On Windows, `os.Rename` is not fully atomic;
+consider Windows-specific syscalls if strict atomicity is required.

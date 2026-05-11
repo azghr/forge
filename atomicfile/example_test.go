@@ -1,80 +1,65 @@
 package atomicfile_test
 
 import (
-	"context"
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/azghr/forge/atomicfile"
 )
 
-func ExampleWrite() {
+func ExampleWriteFile() {
 	dir, _ := os.MkdirTemp("", "atomicfile-example")
 	defer os.RemoveAll(dir)
 
-	path := filepath.Join(dir, "example.txt")
+	fname := filepath.Join(dir, "config.txt")
+	data := bytes.NewBufferString("important")
 
-	if err := atomicfile.Write(path, []byte("hello world")); err != nil {
+	if err := atomicfile.WriteFile(fname, data); err != nil {
 		fmt.Println("write failed:", err)
 		return
 	}
+	// config.txt is fully written or untouched.
 
-	data, _ := os.ReadFile(path)
-	fmt.Println(string(data))
-	// Output: hello world
+	content, _ := os.ReadFile(fname)
+	fmt.Println(string(content))
+	// Output: important
 }
 
-func ExampleWriteContext() {
+func ExampleReplaceFile() {
 	dir, _ := os.MkdirTemp("", "atomicfile-example")
 	defer os.RemoveAll(dir)
 
-	path := filepath.Join(dir, "example.txt")
+	src := filepath.Join(dir, "src.txt")
+	dst := filepath.Join(dir, "dst.txt")
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	os.WriteFile(src, []byte("hello"), 0644)
+	os.WriteFile(dst, []byte("old"), 0644)
 
-	if err := atomicfile.WriteContext(ctx, path, []byte("hello")); err != nil {
-		fmt.Println("write failed:", err)
+	if err := atomicfile.ReplaceFile(src, dst); err != nil {
+		fmt.Println("replace failed:", err)
 		return
 	}
 
-	data, _ := os.ReadFile(path)
-	fmt.Println(string(data))
+	content, _ := os.ReadFile(dst)
+	fmt.Println(string(content))
 	// Output: hello
-}
-
-func ExampleWriteReader() {
-	dir, _ := os.MkdirTemp("", "atomicfile-example")
-	defer os.RemoveAll(dir)
-
-	path := filepath.Join(dir, "example.txt")
-	r := strings.NewReader("from reader")
-
-	if err := atomicfile.WriteReader(context.Background(), path, r); err != nil {
-		fmt.Println("write failed:", err)
-		return
-	}
-
-	data, _ := os.ReadFile(path)
-	fmt.Println(string(data))
-	// Output: from reader
 }
 
 func ExampleWithFileMode() {
 	dir, _ := os.MkdirTemp("", "atomicfile-example")
 	defer os.RemoveAll(dir)
 
-	path := filepath.Join(dir, "example.txt")
+	fname := filepath.Join(dir, "secure.txt")
 
-	if err := atomicfile.Write(path, []byte("data"), atomicfile.WithFileMode(0600)); err != nil {
+	if err := atomicfile.WriteFile(fname, strings.NewReader("data"), atomicfile.WithFileMode(0600)); err != nil {
 		fmt.Println("write failed:", err)
 		return
 	}
 
-	info, _ := os.Stat(path)
+	info, _ := os.Stat(fname)
 	fmt.Printf("%#o\n", info.Mode().Perm())
 	// Output: 0600
 }

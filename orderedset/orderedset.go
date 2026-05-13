@@ -12,16 +12,16 @@ package orderedset
 import "sync"
 
 // Set is a generic ordered set of comparable elements.
-// The zero value is not usable; use NewSet to construct a set.
+// The zero value is not usable; use New to construct a set.
 type Set[T comparable] struct {
 	mu    sync.RWMutex
 	elems []T
 	index map[T]struct{}
 }
 
-// NewSet returns an empty Set pre-populated with the given elements
+// New returns an empty Set pre-populated with the given elements
 // (duplicates are silently dropped, preserving first-occurrence order).
-func NewSet[T comparable](elems ...T) *Set[T] {
+func New[T comparable](elems ...T) *Set[T] {
 	s := &Set[T]{
 		index: make(map[T]struct{}, len(elems)),
 	}

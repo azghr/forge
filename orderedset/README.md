@@ -14,7 +14,7 @@ small, reusable generic type with a clean API.
 ```go
 import "github.com/azghr/forge/orderedset"
 
-s := orderedset.NewSet[int]()
+s := orderedset.New[int]()
 s.Add(1); s.Add(2); s.Add(1)
 fmt.Println(s.Values()) // [1 2]
 
@@ -22,12 +22,12 @@ s.Remove(1)
 fmt.Println(s.Values()) // [2]
 fmt.Println(s.Contains(2)) // true
 
-a := orderedset.NewSet([]int{1, 2, 3}...)
-b := orderedset.NewSet([]int{2, 3, 4}...)
+a := orderedset.New([]int{1, 2, 3}...)
+b := orderedset.New([]int{2, 3, 4}...)
 a.Union(b)
 fmt.Println(a.Values()) // [1 2 3 4]
 
-a = orderedset.NewSet([]int{1, 2, 3}...)
+a = orderedset.New([]int{1, 2, 3}...)
 a.Intersect(b)
 fmt.Println(a.Values()) // [2 3]
 ```
@@ -40,7 +40,7 @@ fmt.Println(a.Values()) // [2 3]
 
 ### Functions
 
-- **`NewSet[T](elems ...T) *Set[T]`** — create a set, optionally pre-populated
+- **`New[T](elems ...T) *Set[T]`** — create a set, optionally pre-populated
   with initial elements (duplicates dropped, first-occurrence order).
 
 ### Methods

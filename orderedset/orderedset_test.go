@@ -10,7 +10,7 @@ import (
 func TestAddRemove(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet[string]()
+	s := orderedset.New[string]()
 	s.Add("a")
 	s.Add("b")
 	s.Add("a")
@@ -37,8 +37,8 @@ func TestUnionIntersect(t *testing.T) {
 	t.Parallel()
 
 	t.Run("union", func(t *testing.T) {
-		a := orderedset.NewSet([]int{1, 2}...)
-		b := orderedset.NewSet([]int{2, 3}...)
+		a := orderedset.New([]int{1, 2}...)
+		b := orderedset.New([]int{2, 3}...)
 		a.Union(b)
 		want := []int{1, 2, 3}
 		if !reflect.DeepEqual(a.Values(), want) {
@@ -47,8 +47,8 @@ func TestUnionIntersect(t *testing.T) {
 	})
 
 	t.Run("intersect", func(t *testing.T) {
-		a := orderedset.NewSet([]int{1, 2}...)
-		b := orderedset.NewSet([]int{2, 3}...)
+		a := orderedset.New([]int{1, 2}...)
+		b := orderedset.New([]int{2, 3}...)
 		a.Intersect(b)
 		want := []int{2}
 		if !reflect.DeepEqual(a.Values(), want) {
@@ -57,21 +57,21 @@ func TestUnionIntersect(t *testing.T) {
 	})
 }
 
-func TestNewSetWithVariadic(t *testing.T) {
+func TestNewWithVariadic(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet(3, 1, 2, 1, 3)
+	s := orderedset.New(3, 1, 2, 1, 3)
 	want := []int{3, 1, 2}
 	got := s.Values()
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("NewSet = %v; want %v", got, want)
+		t.Errorf("New = %v; want %v", got, want)
 	}
 }
 
 func TestContains(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet("a", "b", "c")
+	s := orderedset.New("a", "b", "c")
 
 	tests := []struct {
 		elem string
@@ -97,7 +97,7 @@ func TestContains(t *testing.T) {
 func TestRemoveNonexistent(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet(1, 2, 3)
+	s := orderedset.New(1, 2, 3)
 	s.Remove(99)
 	if s.Len() != 3 {
 		t.Errorf("Len = %d; want 3", s.Len())
@@ -107,7 +107,7 @@ func TestRemoveNonexistent(t *testing.T) {
 func TestEmptySet(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet[int]()
+	s := orderedset.New[int]()
 
 	if s.Len() != 0 {
 		t.Errorf("empty Len = %d; want 0", s.Len())
@@ -126,7 +126,7 @@ func TestEmptySet(t *testing.T) {
 func TestUnionNilOther(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet(1, 2, 3)
+	s := orderedset.New(1, 2, 3)
 	s.Union(nil)
 	want := []int{1, 2, 3}
 	got := s.Values()
@@ -138,7 +138,7 @@ func TestUnionNilOther(t *testing.T) {
 func TestIntersectNilOther(t *testing.T) {
 	t.Parallel()
 
-	s := orderedset.NewSet(1, 2, 3)
+	s := orderedset.New(1, 2, 3)
 	s.Intersect(nil)
 	if s.Len() != 0 {
 		t.Errorf("Intersect with nil should be empty, got %v", s.Values())
@@ -148,8 +148,8 @@ func TestIntersectNilOther(t *testing.T) {
 func TestIntersectDisjoint(t *testing.T) {
 	t.Parallel()
 
-	a := orderedset.NewSet(1, 2, 3)
-	b := orderedset.NewSet(4, 5, 6)
+	a := orderedset.New(1, 2, 3)
+	b := orderedset.New(4, 5, 6)
 	a.Intersect(b)
 	if a.Len() != 0 {
 		t.Errorf("Intersect disjoint should be empty, got %v", a.Values())
@@ -159,8 +159,8 @@ func TestIntersectDisjoint(t *testing.T) {
 func TestUnionPreservesOrder(t *testing.T) {
 	t.Parallel()
 
-	a := orderedset.NewSet(1, 3, 5)
-	b := orderedset.NewSet(2, 4, 6)
+	a := orderedset.New(1, 3, 5)
+	b := orderedset.New(2, 4, 6)
 	a.Union(b)
 	want := []int{1, 3, 5, 2, 4, 6}
 	got := a.Values()
@@ -172,8 +172,8 @@ func TestUnionPreservesOrder(t *testing.T) {
 func TestIntersectPreservesOrder(t *testing.T) {
 	t.Parallel()
 
-	a := orderedset.NewSet(1, 2, 3, 4, 5)
-	b := orderedset.NewSet(5, 3, 1)
+	a := orderedset.New(1, 2, 3, 4, 5)
+	b := orderedset.New(5, 3, 1)
 	a.Intersect(b)
 	want := []int{1, 3, 5}
 	got := a.Values()
@@ -183,7 +183,7 @@ func TestIntersectPreservesOrder(t *testing.T) {
 }
 
 func TestConcurrentSafety(t *testing.T) {
-	s := orderedset.NewSet[int]()
+	s := orderedset.New[int]()
 
 	done := make(chan struct{}, 10)
 
@@ -214,7 +214,7 @@ func TestConcurrentSafety(t *testing.T) {
 }
 
 func BenchmarkAdd(b *testing.B) {
-	s := orderedset.NewSet[int]()
+	s := orderedset.New[int]()
 	b.ResetTimer()
 	for b.Loop() {
 		s.Add(1)
@@ -222,7 +222,7 @@ func BenchmarkAdd(b *testing.B) {
 }
 
 func BenchmarkContains(b *testing.B) {
-	s := orderedset.NewSet(1, 2, 3)
+	s := orderedset.New(1, 2, 3)
 	b.ResetTimer()
 	for b.Loop() {
 		s.Contains(1)
@@ -231,8 +231,8 @@ func BenchmarkContains(b *testing.B) {
 }
 
 func BenchmarkUnion(b *testing.B) {
-	a := orderedset.NewSet(1, 2, 3)
-	other := orderedset.NewSet(3, 4, 5)
+	a := orderedset.New(1, 2, 3)
+	other := orderedset.New(3, 4, 5)
 	b.ResetTimer()
 	for b.Loop() {
 		a.Union(other)
@@ -240,8 +240,8 @@ func BenchmarkUnion(b *testing.B) {
 }
 
 func BenchmarkIntersect(b *testing.B) {
-	a := orderedset.NewSet(1, 2, 3)
-	other := orderedset.NewSet(3, 4, 5)
+	a := orderedset.New(1, 2, 3)
+	other := orderedset.New(3, 4, 5)
 	b.ResetTimer()
 	for b.Loop() {
 		a.Intersect(other)

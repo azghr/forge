@@ -10,25 +10,6 @@ import (
 	"sync"
 )
 
-// Option configures Queue behaviour.
-type Option func(*config)
-
-type config struct {
-	maxHeap bool
-}
-
-func defaultConfig() config {
-	return config{maxHeap: false}
-}
-
-// WithMaxHeap configures the queue as a max-heap (highest priority popped
-// first). The default is min-heap (lowest priority popped first).
-func WithMaxHeap() Option {
-	return func(c *config) {
-		c.maxHeap = true
-	}
-}
-
 // Item holds a value with an associated priority. Lower Priority values
 // have higher precedence in a min-heap (the default).
 type Item[T any] struct {

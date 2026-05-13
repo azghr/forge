@@ -18,7 +18,7 @@ type item[V any] struct {
 
 // Cache stores values of type V under keys of type K with TTL expiration.
 //
-// The zero value is not usable; use NewCache to create a cache.
+// The zero value is not usable; use New to create a cache.
 // Cache is safe for concurrent use.
 type Cache[K comparable, V any] struct {
 	mu    sync.RWMutex
@@ -29,9 +29,9 @@ type Cache[K comparable, V any] struct {
 	stopCleanup     chan struct{}
 }
 
-// NewCache creates a cache. If ttl > 0, values expire after ttl elapses
+// New creates a cache. If ttl > 0, values expire after ttl elapses
 // from the time they are stored. Pass ttl=0 for no expiration.
-func NewCache[K comparable, V any](ttl time.Duration, opts ...Option) *Cache[K, V] {
+func New[K comparable, V any](ttl time.Duration, opts ...Option) *Cache[K, V] {
 	var cfg config
 	for _, opt := range opts {
 		opt(&cfg)

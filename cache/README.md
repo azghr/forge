@@ -21,7 +21,7 @@ computed it can be reused until it is stale.
 ```go
 import "github.com/azghr/forge/cache"
 
-c := cache.NewCache[string, int](5 * time.Second)
+c := cache.New[string, int](5 * time.Second)
 c.Set("x", 42)
 
 v, ok := c.Get("x")   // 42, true
@@ -32,7 +32,7 @@ _, ok = c.Get("x")     // false (expired)
 
 ```go
 // No-expiration mode
-c := cache.NewCache[int, string](0)
+c := cache.New[int, string](0)
 c.Set(1, "one")
 v, ok := c.Get(1)      // "one", true
 ```
@@ -45,7 +45,7 @@ v, ok := c.Get(1)      // "one", true
 
 ### Functions
 
-- **`NewCache[K, V](ttl time.Duration, opts ...Option) *Cache[K, V]`** —
+- **`New[K, V](ttl time.Duration, opts ...Option) *Cache[K, V]`** —
   creates a cache. If ttl > 0, values expire after ttl.
 
 ### Methods

@@ -13,7 +13,7 @@ import (
 
 func TestCacheSetGet(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	c.Set("a", 1)
 	v, ok := c.Get("a")
@@ -24,7 +24,7 @@ func TestCacheSetGet(t *testing.T) {
 
 func TestCacheGetMissing(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	_, ok := c.Get("nope")
 	if ok {
@@ -34,7 +34,7 @@ func TestCacheGetMissing(t *testing.T) {
 
 func TestCacheExpire(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](10 * time.Millisecond)
+	c := cache.New[string, int](10 * time.Millisecond)
 
 	c.Set("a", 1)
 	time.Sleep(15 * time.Millisecond)
@@ -46,7 +46,7 @@ func TestCacheExpire(t *testing.T) {
 
 func TestCacheNoExpire(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, string](0)
+	c := cache.New[string, string](0)
 
 	c.Set("a", "val")
 	v, ok := c.Get("a")
@@ -57,7 +57,7 @@ func TestCacheNoExpire(t *testing.T) {
 
 func TestCacheOverwrite(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](time.Hour)
+	c := cache.New[string, int](time.Hour)
 
 	c.Set("k", 1)
 	c.Set("k", 2)
@@ -70,7 +70,7 @@ func TestCacheOverwrite(t *testing.T) {
 
 func TestCacheDelete(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	c.Set("k", 1)
 	c.Delete("k")
@@ -82,14 +82,14 @@ func TestCacheDelete(t *testing.T) {
 
 func TestCacheDeleteMissing(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	c.Delete("nope")
 }
 
 func TestCacheLen(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	if n := c.Len(); n != 0 {
 		t.Errorf("expected 0, got %d", n)
@@ -105,7 +105,7 @@ func TestCacheLen(t *testing.T) {
 
 func TestCacheExpiredEntryRemovedOnGet(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](10 * time.Millisecond)
+	c := cache.New[string, int](10 * time.Millisecond)
 
 	c.Set("a", 1)
 	time.Sleep(15 * time.Millisecond)
@@ -119,7 +119,7 @@ func TestCacheExpiredEntryRemovedOnGet(t *testing.T) {
 
 func TestCacheGetOrLoad(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	loader := func(ctx context.Context) (int, error) {
 		return 42, nil
@@ -141,7 +141,7 @@ func TestCacheGetOrLoad(t *testing.T) {
 
 func TestCacheGetOrLoadError(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](0)
+	c := cache.New[string, int](0)
 
 	loader := func(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("load failed")
@@ -159,7 +159,7 @@ func TestCacheGetOrLoadError(t *testing.T) {
 
 func TestCacheGetOrLoadCached(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](time.Hour)
+	c := cache.New[string, int](time.Hour)
 
 	c.Set("k", 99)
 
@@ -178,7 +178,7 @@ func TestCacheGetOrLoadCached(t *testing.T) {
 
 func TestCacheGetOrLoadExpired(t *testing.T) {
 	t.Parallel()
-	c := cache.NewCache[string, int](10 * time.Millisecond)
+	c := cache.New[string, int](10 * time.Millisecond)
 
 	c.Set("k", 1)
 	time.Sleep(15 * time.Millisecond)
@@ -197,7 +197,7 @@ func TestCacheGetOrLoadExpired(t *testing.T) {
 }
 
 func TestCacheConcurrentSetGet(t *testing.T) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 
 	var wg sync.WaitGroup
 	for i := range 20 {
@@ -218,7 +218,7 @@ func TestCacheConcurrentSetGet(t *testing.T) {
 }
 
 func TestCacheConcurrentGetOrLoad(t *testing.T) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 
 	var wg sync.WaitGroup
 	var loadCount atomic.Int64
@@ -238,7 +238,7 @@ func TestCacheConcurrentGetOrLoad(t *testing.T) {
 }
 
 func TestCacheConcurrentReadWrite(t *testing.T) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 
 	var wg sync.WaitGroup
 
@@ -266,7 +266,7 @@ func TestCacheConcurrentReadWrite(t *testing.T) {
 }
 
 func TestCacheWithCleanupInterval(t *testing.T) {
-	c := cache.NewCache[string, int](
+	c := cache.New[string, int](
 		10*time.Millisecond,
 		cache.WithCleanupInterval(5*time.Millisecond),
 	)
@@ -281,7 +281,7 @@ func TestCacheWithCleanupInterval(t *testing.T) {
 }
 
 func TestCacheStopCleanup(t *testing.T) {
-	c := cache.NewCache[string, int](
+	c := cache.New[string, int](
 		10*time.Millisecond,
 		cache.WithCleanupInterval(5*time.Millisecond),
 	)
@@ -361,7 +361,7 @@ func TestCacheTableDriven(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := cache.NewCache[string, int](tt.ttl)
+			c := cache.New[string, int](tt.ttl)
 			tt.ops(c)
 			for k, wantV := range tt.wantGet {
 				v, ok := c.Get(k)
@@ -385,7 +385,7 @@ func TestCacheDifferentTypes(t *testing.T) {
 	t.Parallel()
 
 	t.Run("int keys string values", func(t *testing.T) {
-		c := cache.NewCache[int, string](0)
+		c := cache.New[int, string](0)
 		c.Set(1, "one")
 		v, ok := c.Get(1)
 		if !ok || v != "one" {
@@ -395,7 +395,7 @@ func TestCacheDifferentTypes(t *testing.T) {
 
 	t.Run("struct keys", func(t *testing.T) {
 		type key struct{ a, b int }
-		c := cache.NewCache[key, string](0)
+		c := cache.New[key, string](0)
 		k := key{a: 1, b: 2}
 		c.Set(k, "val")
 		v, ok := c.Get(k)
@@ -406,7 +406,7 @@ func TestCacheDifferentTypes(t *testing.T) {
 }
 
 func TestCacheStopIdempotent(t *testing.T) {
-	c := cache.NewCache[string, int](
+	c := cache.New[string, int](
 		time.Millisecond,
 		cache.WithCleanupInterval(time.Millisecond),
 	)
@@ -415,7 +415,7 @@ func TestCacheStopIdempotent(t *testing.T) {
 }
 
 func BenchmarkCacheSet(b *testing.B) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 	b.ReportAllocs()
 	for b.Loop() {
 		c.Set(1, 1)
@@ -423,7 +423,7 @@ func BenchmarkCacheSet(b *testing.B) {
 }
 
 func BenchmarkCacheGet(b *testing.B) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 	c.Set(1, 1)
 	b.ReportAllocs()
 	for b.Loop() {
@@ -432,7 +432,7 @@ func BenchmarkCacheGet(b *testing.B) {
 }
 
 func BenchmarkCacheGetMiss(b *testing.B) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 	b.ReportAllocs()
 	for b.Loop() {
 		c.Get(999)
@@ -440,7 +440,7 @@ func BenchmarkCacheGetMiss(b *testing.B) {
 }
 
 func BenchmarkCacheGetOrLoad(b *testing.B) {
-	c := cache.NewCache[int, int](0)
+	c := cache.New[int, int](0)
 	ctx := context.Background()
 	loader := func(ctx context.Context) (int, error) { return 42, nil }
 	b.ReportAllocs()

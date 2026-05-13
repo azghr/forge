@@ -9,7 +9,7 @@ import (
 )
 
 func Example() {
-	c := cache.NewCache[string, int](5 * time.Second)
+	c := cache.New[string, int](5 * time.Second)
 	c.Set("x", 42)
 	v, ok := c.Get("x")
 	fmt.Println(v, ok)
@@ -17,7 +17,7 @@ func Example() {
 }
 
 func ExampleCache_ttl() {
-	c := cache.NewCache[string, int](10 * time.Millisecond)
+	c := cache.New[string, int](10 * time.Millisecond)
 	c.Set("a", 1)
 	time.Sleep(15 * time.Millisecond)
 	_, ok := c.Get("a")
@@ -26,7 +26,7 @@ func ExampleCache_ttl() {
 }
 
 func ExampleCache_noExpiry() {
-	c := cache.NewCache[int, string](0)
+	c := cache.New[int, string](0)
 	c.Set(1, "one")
 	v, ok := c.Get(1)
 	fmt.Println(v, ok)
@@ -34,7 +34,7 @@ func ExampleCache_noExpiry() {
 }
 
 func ExampleCache_GetOrLoad() {
-	c := cache.NewCache[string, int](time.Minute)
+	c := cache.New[string, int](time.Minute)
 
 	v, err := c.GetOrLoad(context.Background(), "key", func(ctx context.Context) (int, error) {
 		return 99, nil

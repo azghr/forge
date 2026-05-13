@@ -6,7 +6,7 @@ type config struct {
 	cleanupInterval time.Duration
 }
 
-// Option configures a Cache created with NewCache.
+// Option configures a Cache created with New.
 type Option func(*config)
 
 // WithCleanupInterval starts a background goroutine that removes expired

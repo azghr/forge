@@ -10,21 +10,6 @@ import (
 	"strings"
 )
 
-// Option configures Load behaviour.
-type Option func(*loader)
-
-// WithPrefix prepends prefix to every environment variable name looked up
-// during Load.
-func WithPrefix(prefix string) Option {
-	return func(l *loader) {
-		l.prefix = prefix
-	}
-}
-
-type loader struct {
-	prefix string
-}
-
 // Load parses environment variables into the struct pointed to by dst. Each
 // exported field may carry an `env` tag:
 //
@@ -35,14 +20,14 @@ type loader struct {
 // Load returns an error if dst is not a pointer to a struct, if a required
 // variable is missing, or if a value cannot be converted to the field type.
 func Load(dst interface{}, opts ...Option) error {
-	l := &loader{}
+	c := &config{}
 	for _, fn := range opts {
-		fn(l)
+		fn(c)
 	}
-	return l.load(dst)
+	return c.load(dst)
 }
 
-func (l *loader) load(dst interface{}) error {
+func (c *config) load(dst interface{}) error {
 	v := reflect.ValueOf(dst)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return fmt.Errorf("envconfig: dst must be a non-nil pointer to struct, got %T", dst)
@@ -69,8 +54,8 @@ func (l *loader) load(dst interface{}) error {
 		}
 
 		varName := spec.name
-		if l.prefix != "" {
-			varName = l.prefix + spec.name
+		if c.prefix != "" {
+			varName = c.prefix + spec.name
 		}
 
 		val, found := os.LookupEnv(varName)

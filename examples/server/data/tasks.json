@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "hello-world": {
+      "slug": "hello-world",
+      "title": "Hello World",
+      "description": "first task"
+    }
+  }
+}

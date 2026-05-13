@@ -1,0 +1,30 @@
+go 1.26.1
+
+use (
+	./atomicfile
+	./cache
+	./envconfig
+	./examples/cli
+	./examples/config
+	./examples/pipeline
+	./examples/server
+	./flagsub
+	./jsonmerge
+	./lockutil
+	./mathutil
+	./multityperror
+	./option
+	./orderedset
+	./pathsafe
+	./priorityqueue
+	./queue
+	./regexcache
+	./retry
+	./shellquote
+	./sliceutil
+	./stopwatch
+	./stringutil
+	./tablewriter
+	./validator
+	./workerpool
+)

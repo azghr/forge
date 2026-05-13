@@ -48,10 +48,16 @@ func ExampleGCD() {
 
 func ExampleApproxEqual() {
 	fmt.Println(mathutil.ApproxEqual(1.0, 1.0+1e-10))
-	fmt.Println(mathutil.ApproxEqual(1.0, 1.5, mathutil.WithEpsilon(0.6)))
 	fmt.Println(mathutil.ApproxEqual(1.0, 2.0))
 	// Output:
 	// true
+	// false
+}
+
+func ExampleApproxEqualEpsilon() {
+	fmt.Println(mathutil.ApproxEqualEpsilon(1.0, 1.5, 0.6))
+	fmt.Println(mathutil.ApproxEqualEpsilon(1.0, 2.0, 0.6))
+	// Output:
 	// true
 	// false
 }

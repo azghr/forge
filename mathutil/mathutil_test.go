@@ -131,18 +131,18 @@ func TestApproxEqual(t *testing.T) {
 		}
 	})
 
-	t.Run("custom epsilon", func(t *testing.T) {
-		if !mathutil.ApproxEqual(1.0, 1.5, mathutil.WithEpsilon(0.6)) {
+	t.Run("custom epsilon via ApproxEqualEpsilon", func(t *testing.T) {
+		if !mathutil.ApproxEqualEpsilon(1.0, 1.5, 0.6) {
 			t.Error("expected equal with wide epsilon")
 		}
-		if mathutil.ApproxEqual(1.0, 1.5, mathutil.WithEpsilon(0.4)) {
+		if mathutil.ApproxEqualEpsilon(1.0, 1.5, 0.4) {
 			t.Error("expected not equal with tight epsilon")
 		}
 	})
 
-	t.Run("negative epsilon clamped", func(t *testing.T) {
-		if !mathutil.ApproxEqual(1.0, 1.0, mathutil.WithEpsilon(-1)) {
-			t.Error("zero should still match identical values")
+	t.Run("zero epsilon defaults to DefaultEpsilon", func(t *testing.T) {
+		if !mathutil.ApproxEqualEpsilon(1.0, 1.0, 0) {
+			t.Error("zero epsilon should use default and match identical values")
 		}
 	})
 }

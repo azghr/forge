@@ -5,6 +5,9 @@
 // beyond the standard library.
 package mathutil
 
+// DefaultEpsilon is the default tolerance used by ApproxEqual.
+const DefaultEpsilon = 1e-9
+
 // Clamp confines x to the inclusive range [lo, hi].
 // If lo > hi the result is undefined (the implementation swaps them).
 func Clamp(x, lo, hi float64) float64 {
@@ -55,16 +58,24 @@ func abs(n int64) int64 {
 	return n
 }
 
-// ApproxEqual returns true if a and b are within epsilon of each other.
-// opts can specify a custom tolerance via WithEpsilon (defaults to 1e-9).
-func ApproxEqual(a, b float64, opts ...Option) bool {
-	cfg := defaultConfig()
-	for _, o := range opts {
-		o(&cfg)
+// ApproxEqual returns true if a and b are within DefaultEpsilon of each other.
+func ApproxEqual(a, b float64) bool {
+	diff := a - b
+	if diff < 0 {
+		diff = -diff
+	}
+	return diff <= DefaultEpsilon
+}
+
+// ApproxEqualEpsilon returns true if a and b are within eps of each other.
+// If eps <= 0, DefaultEpsilon is used.
+func ApproxEqualEpsilon(a, b, eps float64) bool {
+	if eps <= 0 {
+		eps = DefaultEpsilon
 	}
 	diff := a - b
 	if diff < 0 {
 		diff = -diff
 	}
-	return diff <= cfg.epsilon
+	return diff <= eps
 }

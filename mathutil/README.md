@@ -28,13 +28,14 @@ g := mathutil.GCD(8, 12)        // 4
 - **`Sign(x float64) float64`** — return `-1`, `0`, or `+1`.
 - **`Lerp(a, b, t float64) float64`** — linear interpolation (`t` in `[0,1]`).
 - **`GCD(a, b int64) int64`** — greatest common divisor (Euclidean algorithm).
-- **`ApproxEqual(a, b float64, opts ...Option) bool`** — tolerant floating-point
-  comparison.
+- **`ApproxEqual(a, b float64) bool`** — tolerant floating-point comparison
+  using `DefaultEpsilon` (1e-9).
+- **`ApproxEqualEpsilon(a, b, eps float64) bool`** — tolerant comparison with
+  a custom epsilon. If `eps <= 0`, `DefaultEpsilon` is used.
 
-### Options
+### Constants
 
-- **`WithEpsilon(eps float64) Option`** — tolerance for `ApproxEqual` (default:
-  `1e-9`).
+- **`DefaultEpsilon`** = `1e-9` — default tolerance for `ApproxEqual`.
 
 ## Performance
 

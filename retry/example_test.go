@@ -32,13 +32,11 @@ func ExampleRetryContext() {
 
 func ExampleRetryContext_http() {
 	// Example of retrying an HTTP request that returns server errors.
-	config := retry.NewConfig(
-		retry.WithMaxTries(3),
-		retry.WithInitDelay(50*time.Millisecond),
-		retry.WithMultiplier(2.0),
-	)
-
-	err := retry.RetryContext(context.Background(), config, func() error {
+	err := retry.RetryContext(context.Background(), retry.RetryConfig{
+		MaxTries:   3,
+		InitDelay:  50 * time.Millisecond,
+		Multiplier: 2.0,
+	}, func() error {
 		resp, err := http.Get("http://example.com")
 		if err != nil {
 			return fmt.Errorf("network error: %w", err)

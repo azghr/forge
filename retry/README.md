@@ -40,15 +40,10 @@ err := retry.RetryContext(context.Background(), config, func() error {
 ### Types
 
 - **`RetryConfig`** – fields `MaxTries`, `InitDelay`, `Multiplier`, `MaxDelay`.
-- **`RetryOption`** – functional option for `NewConfig`.
 
 ### Functions
 
 - **`RetryContext(ctx, config, fn)`** – core retry loop.
-- **`NewConfig(opts ...)`** – construct a `RetryConfig` with defaults (3 tries,
-  100 ms, 2× multiplier) overridden by options.
-- **`WithMaxTries(n)`**, **`WithInitDelay(d)`**, **`WithMultiplier(m)`**,
-  **`WithMaxDelay(d)`** – functional option helpers.
 
 ### Error semantics
 

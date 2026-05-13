@@ -10,10 +10,10 @@ import (
 func ExampleStopwatch() {
 	var sw stopwatch.Stopwatch
 	sw.Start()
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 	sw.Stop()
-	fmt.Printf("elapsed: %v\n", sw.Elapsed().Round(time.Millisecond))
-	// Output: elapsed: 10ms
+	fmt.Printf("elapsed: %v\n", sw.Elapsed().Round(100*time.Millisecond))
+	// Output: elapsed: 100ms
 }
 
 func ExampleStopwatch_reset() {
@@ -24,6 +24,14 @@ func ExampleStopwatch_reset() {
 	sw.Reset()
 	fmt.Println(sw.Elapsed())
 	// Output: 0s
+}
+
+func ExampleStopwatch_elapsed() {
+	var sw stopwatch.Stopwatch
+	if sw.Elapsed() == 0 {
+		fmt.Println("zero value ready to use")
+	}
+	// Output: zero value ready to use
 }
 
 func ExampleStopwatch_stopWithoutStart() {

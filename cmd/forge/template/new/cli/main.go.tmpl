@@ -1,0 +1,22 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/azghr/forge/flagsub"
+)
+
+func main() {
+	flagsub.AddSub("version", "Print version", func() {
+		fmt.Println("{{.ProjectName}} version 0.1.0")
+	})
+
+	flagsub.AddSub("help", "Show help", func() {
+		fmt.Printf("Usage: %s <command>\n\n", os.Args[0])
+		fmt.Println("Commands:")
+		fmt.Println("  version  Print version")
+	})
+
+	flagsub.Parse()
+}

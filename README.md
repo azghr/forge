@@ -2,6 +2,44 @@
 
 Monorepo for Go utility and helper packages.
 
+## CLI
+
+`forge` is a CLI tool for working with Forge packages.
+
+```
+forge doctor               Check Go version, config validity, env issues
+forge example <type>       Generate working example scaffold
+forge new <type> <name>    Scaffold production-ready project
+```
+
+### Install
+
+```sh
+go install github.com/azghr/forge/cmd/forge@latest
+```
+
+Or run from source:
+
+```sh
+go run ./cmd/forge <command>
+```
+
+## Examples
+
+Ready-to-run examples showing Forge packages working together:
+
+- [cli](examples/cli/) — Task manager CLI using `flagsub`, `envconfig`, `tablewriter`, `sliceutil`, `shellquote`, `option`, `regexcache`
+- [server](examples/server/) — Task API server using `flagsub`, `envconfig`, `validator`, `pathsafe`, `stringutil`, `atomicfile`, `stopwatch`
+- [config](examples/config/) — JSON config merger using `jsonmerge`, `atomicfile`, `pathsafe`
+- [pipeline](examples/pipeline/) — Data processing pipeline using `orderedset`, `priorityqueue`, `queue`, `workerpool`, `cache`, `retry`, `lockutil`, `multityperror`, `mathutil`
+
+Run any example:
+
+```sh
+cd examples/<name>
+go run .
+```
+
 ## Packages
 
 - [atomicfile](atomicfile/) — Atomic file writes without leaving partial data on failure.

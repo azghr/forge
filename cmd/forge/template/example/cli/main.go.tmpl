@@ -1,0 +1,24 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/azghr/forge/flagsub"
+)
+
+func main() {
+	flagsub.AddSub("hello", "Say hello", func() {
+		name := "world"
+		if len(os.Args) > 2 {
+			name = os.Args[2]
+		}
+		fmt.Printf("Hello, %s!\n", name)
+	})
+
+	flagsub.AddSub("version", "Print version", func() {
+		fmt.Println("0.1.0")
+	})
+
+	flagsub.Parse()
+}

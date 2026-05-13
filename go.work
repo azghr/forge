@@ -3,6 +3,7 @@ go 1.26.1
 use (
 	./atomicfile
 	./cache
+	./cmd/forge
 	./envconfig
 	./examples/cli
 	./examples/config

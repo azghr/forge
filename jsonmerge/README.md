@@ -29,7 +29,7 @@ diff := jsonmerge.Diff(a, b)
 
 ### Functions
 
-- **`Merge(dst, src map[string]interface{}, opts ...MergeOption)`** —
+- **`Merge(dst, src map[string]interface{}, opts ...Option)`** —
   recursively merge `src` into `dst`. Map values are merged recursively;
   non-map values from `src` override `dst`. Slices are replaced or appended
   depending on the option.
@@ -38,7 +38,7 @@ diff := jsonmerge.Diff(a, b)
 
 ### Options
 
-- **`WithSliceMode(m SliceMode) MergeOption`** — controls slice merge behaviour:
+- **`WithSliceMode(m SliceMode) Option`** — controls slice merge behaviour:
   - `SliceReplace` (default) — replace destination slice with source slice.
   - `SliceAppend` — append source slice elements to destination slice.
 

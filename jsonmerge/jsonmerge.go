@@ -7,13 +7,6 @@ package jsonmerge
 
 import "fmt"
 
-// MergeOption configures Merge behaviour.
-type MergeOption func(*mergeConfig)
-
-type mergeConfig struct {
-	sliceMode SliceMode
-}
-
 // SliceMode controls how slices are handled during merge.
 type SliceMode int
 
@@ -24,17 +17,6 @@ const (
 	SliceAppend
 )
 
-func defaultConfig() mergeConfig {
-	return mergeConfig{sliceMode: SliceReplace}
-}
-
-// WithSliceMode sets the merge behaviour for slices.
-func WithSliceMode(m SliceMode) MergeOption {
-	return func(c *mergeConfig) {
-		c.sliceMode = m
-	}
-}
-
 // Merge recursively merges src into dst. For each key in src:
 //   - If dst lacks the key, src's value is written to dst.
 //   - If both values are map[string]interface{}, Merge recurses into them.
@@ -42,7 +24,7 @@ func WithSliceMode(m SliceMode) MergeOption {
 //
 // Slices are handled according to the configured SliceMode (default: replace).
 // dst is modified in place; src is not.
-func Merge(dst, src map[string]interface{}, opts ...MergeOption) {
+func Merge(dst, src map[string]interface{}, opts ...Option) {
 	cfg := defaultConfig()
 	for _, o := range opts {
 		o(&cfg)

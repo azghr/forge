@@ -31,12 +31,9 @@ _, err = pathsafe.SafeJoin("/home/user", "../etc/passwd")
 
 ### Functions
 
-- **`SafeJoin(base, rel string) (string, error)`** – joins base and rel,
-  ensuring the result is within base. Returns cleaned absolute path or
-  `ErrOutsideBase`.
-
-- **`SafeJoinContext(ctx, base, rel string, opts ...Option) (string, error)`** –
-  same as `SafeJoin` with context cancellation and functional options.
+- **`SafeJoin(base, rel string, opts ...Option) (string, error)`** – joins base
+  and rel, ensuring the result is within base. Returns cleaned absolute path or
+  `ErrOutsideBase`. Options can enable symlink resolution.
 
 ### Options
 

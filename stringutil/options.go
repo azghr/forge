@@ -1,7 +1,7 @@
 package stringutil
 
-// SlugOption configures Slug behaviour.
-type SlugOption func(*slugConfig)
+// Option configures Slug behaviour.
+type Option func(*slugConfig)
 
 // slugConfig holds settings for Slug.
 type slugConfig struct {
@@ -15,7 +15,7 @@ func defaultSlugConfig() slugConfig {
 
 // WithSeparator sets the character inserted between words in the slug.
 // The separator must be a non-alphanumeric string (default "-").
-func WithSeparator(sep string) SlugOption {
+func WithSeparator(sep string) Option {
 	return func(c *slugConfig) {
 		if sep != "" {
 			c.separator = sep
@@ -26,7 +26,7 @@ func WithSeparator(sep string) SlugOption {
 // WithMaxLength limits the slug to at most n bytes. The result is
 // truncated at the nearest separator boundary to avoid mid-word cuts.
 // A value of 0 (or negative) means no limit.
-func WithMaxLength(n int) SlugOption {
+func WithMaxLength(n int) Option {
 	return func(c *slugConfig) {
 		if n > 0 {
 			c.maxLength = n

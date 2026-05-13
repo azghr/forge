@@ -32,7 +32,7 @@ func Title(s string) string {
 // collapsed into one. Leading and trailing separators are trimmed.
 //
 // Options can configure the separator and maximum length.
-func Slug(s string, opts ...SlugOption) string {
+func Slug(s string, opts ...Option) string {
 	cfg := defaultSlugConfig()
 	for _, o := range opts {
 		o(&cfg)

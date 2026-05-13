@@ -9,10 +9,10 @@ import (
 )
 
 func ExamplePool() {
-	pool := workerpool.NewPool(3)
+	pool := workerpool.New[int](3)
 	for i := 0; i < 5; i++ {
 		i := i
-		pool.Submit(func() interface{} {
+		pool.Submit(func() int {
 			time.Sleep(time.Duration(i) * 10 * time.Millisecond)
 			return i * 2
 		})
@@ -21,7 +21,7 @@ func ExamplePool() {
 
 	var results []int
 	for r := range pool.Results {
-		results = append(results, r.(int))
+		results = append(results, r)
 	}
 	sort.Ints(results)
 	fmt.Println(results)
@@ -29,7 +29,7 @@ func ExamplePool() {
 }
 
 func ExamplePool_noTasks() {
-	pool := workerpool.NewPool(2)
+	pool := workerpool.New[int](2)
 	pool.Close()
 
 	_, ok := <-pool.Results

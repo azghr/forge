@@ -1,5 +1,3 @@
-// Package workerpool provides a fixed-size worker goroutine pool for
-// concurrent task execution with bounded parallelism and result collection.
 package workerpool
 
 import "sync"
@@ -7,29 +5,29 @@ import "sync"
 // Pool represents a fixed-size worker pool that executes submitted tasks
 // concurrently and delivers results through the Results channel.
 //
-// The zero Pool is not ready for use; create one with NewPool.
+// The zero Pool is not ready for use; create one with New.
 //
 // A Pool is safe for concurrent use. Submit may be called from multiple
 // goroutines. Results must be consumed from a single goroutine after Close.
-type Pool struct {
-	tasks   chan func() interface{}
-	Results chan interface{}
+type Pool[T any] struct {
+	tasks   chan func() T
+	Results chan T
 	wg      sync.WaitGroup
 }
 
-// NewPool creates a pool with n worker goroutines. At most n tasks execute
+// New creates a pool with n worker goroutines. At most n tasks execute
 // concurrently; additional submissions queue in a task buffer.
 //
 // Options may be provided to configure the task buffer size (defaults to n).
 // The Results channel is buffered with capacity n.
-func NewPool(n int, opts ...Option) *Pool {
+func New[T any](n int, opts ...Option) *Pool[T] {
 	o := &options{taskBuf: n}
 	for _, fn := range opts {
 		fn(o)
 	}
-	p := &Pool{
-		tasks:   make(chan func() interface{}, o.taskBuf),
-		Results: make(chan interface{}, n),
+	p := &Pool[T]{
+		tasks:   make(chan func() T, o.taskBuf),
+		Results: make(chan T, n),
 	}
 	for i := 0; i < n; i++ {
 		p.wg.Add(1)
@@ -43,7 +41,7 @@ func NewPool(n int, opts ...Option) *Pool {
 // Results buffer has space; otherwise a goroutine is spawned so the worker
 // never blocks on result delivery. This preserves result ordering for
 // workloads that fit within the Results buffer.
-func (p *Pool) worker() {
+func (p *Pool[T]) worker() {
 	defer p.wg.Done()
 	for task := range p.tasks {
 		result := task()
@@ -51,7 +49,7 @@ func (p *Pool) worker() {
 		case p.Results <- result:
 		default:
 			p.wg.Add(1)
-			go func(r interface{}) {
+			go func(r T) {
 				defer p.wg.Done()
 				p.Results <- r
 			}(result)
@@ -59,12 +57,12 @@ func (p *Pool) worker() {
 	}
 }
 
-// Submit adds a task to the pool for execution. The task is a function that
-// returns an interface{}. Submit blocks if the task buffer is full.
+// Submit adds a task to the pool for execution. Submit blocks if the task
+// buffer is full.
 //
 // Submitting after Close panics; callers must ensure all submissions are
 // complete before calling Close.
-func (p *Pool) Submit(task func() interface{}) {
+func (p *Pool[T]) Submit(task func() T) {
 	p.tasks <- task
 }
 
@@ -78,7 +76,7 @@ func (p *Pool) Submit(task func() interface{}) {
 // delivered its result.
 //
 // Close returns immediately; it does not block until tasks complete.
-func (p *Pool) Close() {
+func (p *Pool[T]) Close() {
 	close(p.tasks)
 	go func() {
 		p.wg.Wait()

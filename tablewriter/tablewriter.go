@@ -25,13 +25,9 @@ type Table struct {
 	align   []Alignment
 }
 
-// New creates a new table with the given column headers.
-func New(headers ...string) *Table {
-	return NewWithOptions(headers)
-}
-
-// NewWithOptions creates a new table with headers and functional options.
-func NewWithOptions(headers []string, opts ...Option) *Table {
+// New creates a new table with the given column headers and optional
+// configuration.
+func New(headers []string, opts ...Option) *Table {
 	cfg := defaultConfig()
 	for _, opt := range opts {
 		opt(&cfg)

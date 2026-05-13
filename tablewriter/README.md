@@ -19,7 +19,7 @@ Features:
 ```go
 import "github.com/azghr/forge/tablewriter"
 
-tbl := tablewriter.New("Name", "Age")
+tbl := tablewriter.New([]string{"Name", "Age"})
 tbl.Append("Alice", "30")
 tbl.Append("Bob", "25")
 fmt.Println(tbl.Render())
@@ -39,9 +39,8 @@ fmt.Println(tbl.Render())
 
 ### Functions
 
-- **`New(headers ...string) *Table`** — creates a table with headers.
-- **`NewWithOptions(headers []string, opts ...Option) *Table`** — creates a
-  table with headers and functional options.
+- **`New(headers []string, opts ...Option) *Table`** — creates a table with
+  headers and optional configuration (padding, alignment).
 
 ### Methods
 

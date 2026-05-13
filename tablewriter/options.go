@@ -28,7 +28,7 @@ func WithPadding(n int) Option {
 //
 // Example:
 //
-//	t := tablewriter.NewWithOptions(
+//	t := tablewriter.New(
 //	    []string{"Name", "Age"},
 //	    tablewriter.WithAlignment(tablewriter.AlignRight, tablewriter.AlignLeft),
 //	)

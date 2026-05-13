@@ -7,7 +7,7 @@ import (
 )
 
 func Example() {
-	tbl := tablewriter.New("Name", "Age")
+	tbl := tablewriter.New([]string{"Name", "Age"})
 	tbl.Append("Alice", "30")
 	tbl.Append("Bob", "25")
 	fmt.Print(tbl.Render())
@@ -19,7 +19,7 @@ func Example() {
 }
 
 func Example_singleColumn() {
-	tbl := tablewriter.New("Score")
+	tbl := tablewriter.New([]string{"Score"})
 	tbl.Append("42")
 	tbl.Append("100")
 	fmt.Print(tbl.Render())
@@ -31,7 +31,7 @@ func Example_singleColumn() {
 }
 
 func Example_padding() {
-	tbl := tablewriter.NewWithOptions(
+	tbl := tablewriter.New(
 		[]string{"A", "B"},
 		tablewriter.WithPadding(2),
 	)
@@ -44,7 +44,7 @@ func Example_padding() {
 }
 
 func Example_alignment() {
-	tbl := tablewriter.NewWithOptions(
+	tbl := tablewriter.New(
 		[]string{"Item", "Price"},
 		tablewriter.WithAlignment(tablewriter.AlignLeft, tablewriter.AlignRight),
 	)

@@ -5,7 +5,6 @@
 package pathsafe
 
 import (
-	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -14,20 +13,11 @@ import (
 // SafeJoin joins base and rel ensuring the result is within base.
 // Returns the cleaned absolute path or an error if the result escapes base.
 //
-// Performance: O(path length). Uses filepath.Abs and filepath.Clean.
-func SafeJoin(base, rel string) (string, error) {
-	return joinOpts(base, rel, options{})
-}
-
-// SafeJoinContext joins base and rel with context cancellation and functional
-// options. It behaves identically to SafeJoin when no options are provided.
+// opts can specify AllowSymlinkFollow to resolve symlinks before the
+// containment check.
 //
-// The context is checked before any filesystem operations begin. If ctx is
-// done, ctx.Err() is returned immediately.
-func SafeJoinContext(ctx context.Context, base, rel string, opts ...Option) (string, error) {
-	if err := ctx.Err(); err != nil {
-		return "", err
-	}
+// Performance: O(path length). Uses filepath.Abs and filepath.Clean.
+func SafeJoin(base, rel string, opts ...Option) (string, error) {
 	var o options
 	for _, opt := range opts {
 		opt(&o)

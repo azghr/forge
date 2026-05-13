@@ -1,7 +1,6 @@
 package pathsafe_test
 
 import (
-	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -113,37 +112,6 @@ func TestSafeJoin(t *testing.T) {
 	}
 }
 
-func TestSafeJoinContext(t *testing.T) {
-	t.Parallel()
-
-	t.Run("cancelled context returns error", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		cancel()
-
-		_, err := pathsafe.SafeJoinContext(ctx, "/tmp/base", "sub")
-		if !errors.Is(err, context.Canceled) {
-			t.Errorf("expected Canceled, got %v", err)
-		}
-	})
-
-	t.Run("valid context succeeds", func(t *testing.T) {
-		p, err := pathsafe.SafeJoinContext(context.Background(), "/tmp/base", "sub/val")
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-		if !hasPrefix(p, "/tmp/base") {
-			t.Errorf("expected prefix /tmp/base, got %q", p)
-		}
-	})
-
-	t.Run("traversal blocked with context", func(t *testing.T) {
-		_, err := pathsafe.SafeJoinContext(context.Background(), "/tmp/base", "../etc")
-		if !errors.Is(err, pathsafe.ErrOutsideBase) {
-			t.Errorf("expected ErrOutsideBase, got %v", err)
-		}
-	})
-}
-
 func TestSafeJoinFollowSymlinks(t *testing.T) {
 	t.Parallel()
 
@@ -165,8 +133,7 @@ func TestSafeJoinFollowSymlinks(t *testing.T) {
 	}
 
 	t.Run("symlink traversal blocked when follow enabled", func(t *testing.T) {
-		_, err := pathsafe.SafeJoinContext(
-			context.Background(),
+		_, err := pathsafe.SafeJoin(
 			baseDir, "escape",
 			pathsafe.AllowSymlinkFollow(),
 		)
@@ -187,12 +154,11 @@ func TestSafeJoinFollowSymlinks(t *testing.T) {
 }
 
 func TestSafeJoinConcurrent(t *testing.T) {
-	ctx := context.Background()
 	errs := make(chan error, 20)
 
 	for range 20 {
 		go func() {
-			_, err := pathsafe.SafeJoinContext(ctx, "/tmp/base", "sub/val")
+			_, err := pathsafe.SafeJoin("/tmp/base", "sub/val")
 			errs <- err
 		}()
 	}
@@ -218,11 +184,10 @@ func BenchmarkSafeJoinTraversal(b *testing.B) {
 	}
 }
 
-func BenchmarkSafeJoinContext(b *testing.B) {
-	ctx := context.Background()
+func BenchmarkSafeJoinWithOption(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
-		pathsafe.SafeJoinContext(ctx, "/tmp/base", "sub/dir/file.txt")
+		pathsafe.SafeJoin("/tmp/base", "sub/dir/file.txt", pathsafe.AllowSymlinkFollow())
 	}
 }
 

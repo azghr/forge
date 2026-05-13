@@ -1,6 +1,6 @@
 package pathsafe
 
-// Option configures SafeJoinContext behavior.
+// Option configures SafeJoin behavior.
 type Option func(*options)
 
 type options struct {

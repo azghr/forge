@@ -23,6 +23,7 @@ use (
 	./retry
 	./shellquote
 	./sliceutil
+	./starter/service-template
 	./stopwatch
 	./stringutil
 	./tablewriter

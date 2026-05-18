@@ -1,6 +1,22 @@
 # forge
 
-Monorepo for Go utility and helper packages.
+Go utility packages — small, composable, stdlib-first.
+
+## Quick Start
+
+```sh
+# Create a production Go service in one command
+go run github.com/azghr/forge/cmd/forge@latest new api my-service
+cd my-service
+go run .
+```
+
+Or explore the [starter template](starter/service-template/) — a production-ready HTTP service showing Forge packages in action:
+
+```sh
+cd starter/service-template
+go run .
+```
 
 ## CLI
 
@@ -10,6 +26,7 @@ Monorepo for Go utility and helper packages.
 forge doctor               Check Go version, config validity, env issues
 forge example <type>       Generate working example scaffold
 forge new <type> <name>    Scaffold production-ready project
+forge add <package>        Add forge package to your project
 ```
 
 ### Install

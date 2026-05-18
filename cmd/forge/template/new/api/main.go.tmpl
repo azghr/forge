@@ -1,0 +1,180 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/azghr/forge/envconfig"
+	"github.com/azghr/forge/retry"
+	"github.com/azghr/forge/stopwatch"
+)
+
+type Config struct {
+	Port      string `env:"PORT,default=8080"`
+	LogFormat string `env:"LOG_FORMAT,default=text"`
+	LogLevel  string `env:"LOG_LEVEL,default=info"`
+}
+
+func (c Config) String() string {
+	return "port=" + c.Port + " log_format=" + c.LogFormat + " log_level=" + c.LogLevel
+}
+
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	var cfg Config
+	if err := envconfig.Load(&cfg); err != nil {
+		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
+	}
+
+	level := slog.LevelInfo
+	switch cfg.LogLevel {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	}
+	var h slog.Handler
+	if cfg.LogFormat == "json" {
+		h = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level})
+	} else {
+		h = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level})
+	}
+	slog.SetDefault(slog.New(h))
+
+	slog.Info("starting {{.ProjectName}}", "config", cfg.String())
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", handleHealth)
+	mux.HandleFunc("GET /api/items", handleListItems)
+	mux.HandleFunc("POST /api/items", handleCreateItem)
+
+	srv := &http.Server{
+		Addr:         ":" + cfg.Port,
+		Handler:      withMiddleware(mux),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	go func() {
+		slog.Info("listening", "addr", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("server error", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	<-ctx.Done()
+	slog.Info("shutting down")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		slog.Error("shutdown error", "error", err)
+	}
+	slog.Info("stopped")
+}
+
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+	respondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+type Item struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+var items []Item
+
+func handleListItems(w http.ResponseWriter, r *http.Request) {
+	var sw stopwatch.Stopwatch
+	sw.Start()
+	defer func() {
+		slog.Debug("list items", "count", len(items), "duration", sw.Elapsed())
+	}()
+
+	respondJSON(w, http.StatusOK, items)
+}
+
+func handleCreateItem(w http.ResponseWriter, r *http.Request) {
+	var item Item
+	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if item.Name == "" {
+		respondError(w, http.StatusUnprocessableEntity, "name is required")
+		return
+	}
+
+	var sw stopwatch.Stopwatch
+	sw.Start()
+	err := retry.RetryContext(r.Context(), retry.RetryConfig{
+		MaxTries:   3,
+		InitDelay:  50 * time.Millisecond,
+		Multiplier: 2.0,
+		MaxDelay:   2 * time.Second,
+	}, func() error {
+		items = append(items, item)
+		slog.Info("item created", "name", item.Name)
+		return nil
+	})
+	slog.Debug("create item", "duration", sw.Elapsed())
+
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "failed to create item")
+		return
+	}
+
+	respondJSON(w, http.StatusCreated, item)
+}
+
+func withMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var sw stopwatch.Stopwatch
+		sw.Start()
+		ww := &respWriter{w, http.StatusOK}
+
+		defer func() {
+			if rec := recover(); rec != nil {
+				slog.Error("panic", "method", r.Method, "path", r.URL.Path, "panic", rec)
+				respondError(ww, http.StatusInternalServerError, "internal server error")
+			}
+			slog.Info("request", "method", r.Method, "path", r.URL.Path,
+				"status", ww.status, "duration", sw.Elapsed())
+		}()
+
+		next.ServeHTTP(ww, r)
+	})
+}
+
+type respWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *respWriter) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func respondJSON(w http.ResponseWriter, status int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
+}
+
+func respondError(w http.ResponseWriter, status int, msg string) {
+	respondJSON(w, status, map[string]string{"error": msg})
+}

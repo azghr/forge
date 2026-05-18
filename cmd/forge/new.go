@@ -21,6 +21,7 @@ type newType struct {
 var newTypes = []newType{
 	{Name: "cli", Description: "Production-ready CLI tool"},
 	{Name: "server", Description: "Production-ready HTTP server"},
+	{Name: "api", Description: "Production HTTP API with forge packages"},
 }
 
 func runNew() {

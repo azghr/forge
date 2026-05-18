@@ -78,6 +78,31 @@ func TestScaffoldNewServer(t *testing.T) {
 	}
 }
 
+func TestScaffoldNewAPI(t *testing.T) {
+	tmpDir := filepath.Join(t.TempDir(), "myapi")
+	err := scaffoldNew("api", tmpDir)
+	if err != nil {
+		t.Fatalf("scaffoldNew(api): %v", err)
+	}
+
+	expected := []string{"main.go", "go.mod", "Dockerfile", "Makefile"}
+	for _, f := range expected {
+		path := filepath.Join(tmpDir, f)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			t.Errorf("expected %s to exist", f)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(tmpDir, "main.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, pkg := range []string{"envconfig", "retry", "stopwatch"} {
+		if !strings.Contains(string(data), "forge/"+pkg) {
+			t.Errorf("expected forge/%s in generated main.go", pkg)
+		}
+	}
+}
+
 func TestColor_noColorEnv(t *testing.T) {
 	os.Setenv("NO_COLOR", "1")
 	defer os.Unsetenv("NO_COLOR")
@@ -120,8 +145,48 @@ func TestListExampleTypes(t *testing.T) {
 
 func TestListNewTypes(t *testing.T) {
 	got := captureStdout(listNewTypes)
-	if !strings.Contains(got, "cli") || !strings.Contains(got, "server") {
-		t.Errorf("expected cli and server in output, got: %s", got)
+	for _, want := range []string{"cli", "server", "api"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("expected %q in output, got: %s", want, got)
+		}
+	}
+}
+
+func TestListPackages(t *testing.T) {
+	got := captureStdout(listPackages)
+	for _, want := range []string{"retry", "envconfig", "workerpool"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("expected %q in output, got: %s", want, got)
+		}
+	}
+}
+
+func TestFindPkg(t *testing.T) {
+	p := findPkg("retry")
+	if p == nil {
+		t.Fatal("expected to find retry")
+	}
+	if p.Name != "retry" {
+		t.Errorf("expected name retry, got %s", p.Name)
+	}
+
+	p = findPkg("RETRY")
+	if p == nil {
+		t.Fatal("expected case-insensitive match")
+	}
+}
+
+func TestFindPkg_unknown(t *testing.T) {
+	if p := findPkg("nonexistent"); p != nil {
+		t.Errorf("expected nil for unknown package, got %v", p)
+	}
+}
+
+func TestPkgModulePath(t *testing.T) {
+	path := pkgModulePath("retry")
+	want := "github.com/azghr/forge/retry"
+	if path != want {
+		t.Errorf("got %q, want %q", path, want)
 	}
 }
 

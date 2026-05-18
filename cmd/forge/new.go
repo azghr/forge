@@ -79,10 +79,11 @@ func scaffoldNew(typeName, projectName string) error {
 		return fmt.Errorf("creating output dir: %w", err)
 	}
 
+	baseName := filepath.Base(projectName)
 	data := map[string]string{
-		"ProjectName": projectName,
-		"PackageName": strings.ReplaceAll(projectName, "-", ""),
-		"ModulePath":  projectName,
+		"ProjectName": baseName,
+		"PackageName": strings.ReplaceAll(baseName, "-", ""),
+		"ModulePath":  baseName,
 	}
 
 	for _, e := range entries {
@@ -124,6 +125,14 @@ func scaffoldNew(typeName, projectName string) error {
 		fmt.Printf("  %s %s\n", green("created"), outPath)
 	}
 
-	fmt.Printf("\n%s Project %q scaffolded in %s/\n", green("done"), projectName, outDir)
+	fmt.Printf("\n%s Project %q scaffolded in %s/\n", green("done"), baseName, outDir)
+	fmt.Println()
+	fmt.Println(cyan("Next steps:"))
+	fmt.Printf("  cd %s\n", outDir)
+	fmt.Printf("  go mod tidy\n")
+	fmt.Printf("  go run .\n")
+	if typeName == "api" || typeName == "server" {
+		fmt.Printf("  make run\n")
+	}
 	return nil
 }

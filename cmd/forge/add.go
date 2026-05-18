@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"sort"
 	"strings"
 )
@@ -44,20 +45,29 @@ func runAdd() {
 		return
 	}
 
-	name := args[0]
-	for _, p := range forgePackages {
-		if p.Name == name {
-			fmt.Printf("%s Run this in your project:\n\n", green("→"))
-			fmt.Printf("  go get github.com/azghr/forge/%s@latest\n\n", name)
-			fmt.Printf("  Package: %s\n", p.Name)
-			fmt.Printf("  Purpose: %s\n", p.Description)
-			return
+	for _, name := range args {
+		p := findPkg(name)
+		if p == nil {
+			fmt.Fprintf(os.Stderr, "%s unknown package %q\n", red("error:"), name)
+			listPackages()
+			os.Exit(1)
 		}
-	}
 
-	fmt.Fprintf(os.Stderr, "%s unknown package %q\n", red("error:"), name)
-	listPackages()
-	os.Exit(1)
+		modulePath := pkgModulePath(p.Name)
+		fmt.Printf("  %s Adding %s...\n", green("→"), p.Name)
+
+		cmd := exec.Command("go", "get", modulePath+"@latest")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "%s failed to add %s: %v\n", red("error:"), p.Name, err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("  %s Added %s (%s)\n", green("✓"), p.Name, p.Description)
+		fmt.Printf("    import \"%s\"\n", modulePath)
+		fmt.Println()
+	}
 }
 
 func listPackages() {
@@ -69,15 +79,14 @@ func listPackages() {
 		fmt.Printf("  %-20s %s\n", p.Name, p.Description)
 	}
 	fmt.Println()
-	fmt.Printf("Usage: %s add <package>\n", os.Args[0])
+	fmt.Printf("Usage: %s add <package> [package...]\n", os.Args[0])
 	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  forge add retry")
-	fmt.Println("  forge add envconfig")
-	fmt.Println("  forge add stopwatch")
+	fmt.Println("  forge add envconfig stopwatch")
 	fmt.Println()
-	fmt.Println("Or add multiple packages to go.mod at once:")
-	fmt.Println("  forge add retry | grep 'go get' | sh")
+	fmt.Println("Adds the specified forge package(s) to your go.mod via 'go get'.")
+	fmt.Println("Run from within a Go module directory.")
 }
 
 // pkgModulePath returns the full module path for a forge package.

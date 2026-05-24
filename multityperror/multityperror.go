@@ -1,3 +1,8 @@
+// Package multityperror aggregates multiple error values into one.
+//
+// It is a concurrency-safe alternative to errors.Join that supports
+// incremental accumulation (append as errors occur) and custom
+// formatting via functional options.
 package multityperror
 
 import (

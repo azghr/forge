@@ -19,7 +19,7 @@ import (
 //
 // Load returns an error if dst is not a pointer to a struct, if a required
 // variable is missing, or if a value cannot be converted to the field type.
-func Load(dst interface{}, opts ...Option) error {
+func Load(dst any, opts ...Option) error {
 	c := &config{}
 	for _, fn := range opts {
 		fn(c)
@@ -27,7 +27,7 @@ func Load(dst interface{}, opts ...Option) error {
 	return c.load(dst)
 }
 
-func (c *config) load(dst interface{}) error {
+func (c *config) load(dst any) error {
 	v := reflect.ValueOf(dst)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return fmt.Errorf("envconfig: dst must be a non-nil pointer to struct, got %T", dst)

@@ -1,3 +1,8 @@
+// Package workerpool provides a fixed-size worker goroutine pool for
+// executing tasks concurrently and collecting results.
+//
+// It uses generics for type-safe task and result handling, supports
+// configurable task buffering, and is safe for concurrent use.
 package workerpool
 
 import "sync"

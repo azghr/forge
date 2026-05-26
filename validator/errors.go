@@ -9,7 +9,7 @@ type FieldError struct {
 	// Tag is the validation tag that failed (e.g. "nonzero", "email").
 	Tag string
 	// Value is the actual value of the field.
-	Value interface{}
+	Value any
 }
 
 // ValidationError is a slice of FieldError values, one per failed field.

@@ -26,7 +26,7 @@ var emailRegex = regexp.MustCompile(`^[^@\s]+@[^@\s]+$`)
 //	email   — string field must match a basic email pattern.
 //
 // Example tag: `validate:"nonzero,email"`
-func ValidateStruct(v interface{}, opts ...Option) error {
+func ValidateStruct(v any, opts ...Option) error {
 	cfg := defaultConfig()
 	for _, o := range opts {
 		o(&cfg)

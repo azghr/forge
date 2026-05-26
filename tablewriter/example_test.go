@@ -8,8 +8,8 @@ import (
 
 func Example() {
 	tbl := tablewriter.New([]string{"Name", "Age"})
-	tbl.Append("Alice", "30")
-	tbl.Append("Bob", "25")
+	_ = tbl.Append("Alice", "30")
+	_ = tbl.Append("Bob", "25")
 	fmt.Print(tbl.Render())
 	// Output:
 	//  Name  | Age
@@ -20,8 +20,8 @@ func Example() {
 
 func Example_singleColumn() {
 	tbl := tablewriter.New([]string{"Score"})
-	tbl.Append("42")
-	tbl.Append("100")
+	_ = tbl.Append("42")
+	_ = tbl.Append("100")
 	fmt.Print(tbl.Render())
 	// Output:
 	//  Score
@@ -35,7 +35,7 @@ func Example_padding() {
 		[]string{"A", "B"},
 		tablewriter.WithPadding(2),
 	)
-	tbl.Append("x", "y")
+	_ = tbl.Append("x", "y")
 	fmt.Print(tbl.Render())
 	// Output:
 	//   A  |  B
@@ -48,8 +48,8 @@ func Example_alignment() {
 		[]string{"Item", "Price"},
 		tablewriter.WithAlignment(tablewriter.AlignLeft, tablewriter.AlignRight),
 	)
-	tbl.Append("Apple", "$1.50")
-	tbl.Append("Banana", "$0.75")
+	_ = tbl.Append("Apple", "$1.50")
+	_ = tbl.Append("Banana", "$0.75")
 	fmt.Print(tbl.Render())
 	// Output:
 	//  Item   |  Price

@@ -1,3 +1,8 @@
+// Package tablewriter renders tabular data as formatted ASCII tables.
+//
+// It provides column alignment, configurable padding, and safe concurrent
+// access. Designed for CLI tools and log output where readable tables are
+// needed without external dependencies.
 package tablewriter
 
 import (
@@ -45,11 +50,11 @@ func New(headers []string, opts ...Option) *Table {
 	}
 }
 
-// Append adds a row of values. It panics if the row length differs from
-// the number of columns defined by headers.
-func (t *Table) Append(row ...string) {
+// Append adds a row of values. It returns an error if the row length
+// differs from the number of columns defined by headers.
+func (t *Table) Append(row ...string) error {
 	if len(row) != len(t.headers) {
-		panic(fmt.Sprintf("tablewriter: row has %d columns, expected %d", len(row), len(t.headers)))
+		return fmt.Errorf("tablewriter: row has %d columns, expected %d", len(row), len(t.headers))
 	}
 	r := make([]string, len(row))
 	copy(r, row)
@@ -57,6 +62,7 @@ func (t *Table) Append(row ...string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.rows = append(t.rows, r)
+	return nil
 }
 
 // Render returns the table as an ASCII string.

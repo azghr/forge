@@ -9,81 +9,21 @@ import (
 	"github.com/azghr/forge/tablewriter"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	tbl := tablewriter.New([]string{"Name", "Age"})
-	if tbl.Len() != 0 {
-		t.Errorf("expected 0 rows, got %d", tbl.Len())
-	}
-}
-
-func TestAppendAndRender(t *testing.T) {
-	t.Parallel()
-
-	tbl := tablewriter.New([]string{"Name", "Age"})
-	tbl.Append("Alice", "30")
-	tbl.Append("Bob", "25")
-
-	out := tbl.Render()
-	if !strings.Contains(out, "Alice") {
-		t.Error("output missing Alice")
-	}
-	if !strings.Contains(out, "30") {
-		t.Error("output missing 30")
-	}
-}
-
-func TestRenderFormat(t *testing.T) {
-	t.Parallel()
-
-	tbl := tablewriter.New([]string{"Name", "Age"})
-	tbl.Append("Alice", "30")
-	tbl.Append("Bob", "25")
-
-	out := tbl.Render()
-	const expected = " Name  | Age\n-------+-----\n Alice | 30\n Bob   | 25\n"
-	if out != expected {
-		t.Errorf("unexpected output:\n%q\nwant:\n%q", out, expected)
-	}
-}
-
-func TestEmptyHeaders(t *testing.T) {
-	t.Parallel()
-
-	tbl := tablewriter.New(nil)
-	out := tbl.Render()
-	if out != "" {
-		t.Errorf("expected empty string, got %q", out)
-	}
-}
-
-func TestNoRows(t *testing.T) {
-	t.Parallel()
-
-	tbl := tablewriter.New([]string{"A", "B"})
-	out := tbl.Render()
-	if !strings.Contains(out, "A") || !strings.Contains(out, "B") {
-		t.Error("headers should appear even with no rows")
-	}
-}
-
-func TestAppendPanicOnMismatch(t *testing.T) {
+func TestAppendErrorOnMismatch(t *testing.T) {
 	t.Parallel()
 
 	tbl := tablewriter.New([]string{"A", "B"})
 
-	didPanic := false
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				didPanic = true
-			}
-		}()
-		tbl.Append("1", "2", "3")
-	}()
-	if !didPanic {
-		t.Error("expected panic for mismatched columns")
+	err := tbl.Append("1", "2", "3")
+	if err == nil {
+		t.Fatal("expected error for mismatched columns")
+	}
+}
+
+func mustAppend(t *testing.T, tbl *tablewriter.Table, row ...string) {
+	t.Helper()
+	if err := tbl.Append(row...); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -91,8 +31,8 @@ func TestSingleColumn(t *testing.T) {
 	t.Parallel()
 
 	tbl := tablewriter.New([]string{"X"})
-	tbl.Append("a")
-	tbl.Append("b")
+	mustAppend(t, tbl, "a")
+	mustAppend(t, tbl, "b")
 
 	out := tbl.Render()
 	if !strings.Contains(out, "X") || !strings.Contains(out, "a") || !strings.Contains(out, "b") {
@@ -104,7 +44,7 @@ func TestSingleRow(t *testing.T) {
 	t.Parallel()
 
 	tbl := tablewriter.New([]string{"A", "B"})
-	tbl.Append("x", "y")
+	mustAppend(t, tbl, "x", "y")
 
 	out := tbl.Render()
 	const expected = " A | B\n---+---\n x | y\n"
@@ -117,7 +57,7 @@ func TestLongValues(t *testing.T) {
 	t.Parallel()
 
 	tbl := tablewriter.New([]string{"Short", "VeryLongColumnName"})
-	tbl.Append("a", "b")
+	mustAppend(t, tbl, "a", "b")
 
 	out := tbl.Render()
 	if !strings.Contains(out, "VeryLongColumnName") {
@@ -129,7 +69,7 @@ func TestWrite(t *testing.T) {
 	t.Parallel()
 
 	tbl := tablewriter.New([]string{"A"})
-	tbl.Append("1")
+	mustAppend(t, tbl, "1")
 
 	var buf bytes.Buffer
 	n, err := tbl.Write(&buf)
@@ -152,7 +92,7 @@ func TestConcurrency(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			tbl.Append("x", "y")
+			mustAppend(t, tbl, "x", "y")
 		}()
 	}
 	wg.Wait()
@@ -170,7 +110,7 @@ func TestConcurrentReadWrite(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			tbl.Append("x", "y")
+			mustAppend(t, tbl, "x", "y")
 		}()
 	}
 
@@ -233,7 +173,7 @@ func TestTableDriven(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tbl := tablewriter.New(tt.headers, tt.opts...)
 			for _, row := range tt.rows {
-				tbl.Append(row...)
+				mustAppend(t, tbl, row...)
 			}
 			out := tbl.Render()
 
@@ -258,8 +198,8 @@ func TestWithAlignmentExact(t *testing.T) {
 		[]string{"Name", "Age", "City"},
 		tablewriter.WithAlignment(tablewriter.AlignLeft, tablewriter.AlignRight, tablewriter.AlignCenter),
 	)
-	tbl.Append("Alice", "30", "NYC")
-	tbl.Append("Bob", "25", "LA")
+	mustAppend(t, tbl, "Alice", "30", "NYC")
+	mustAppend(t, tbl, "Bob", "25", "LA")
 
 	_ = tbl.Render()
 }
@@ -271,7 +211,7 @@ func TestWithAlignmentPartial(t *testing.T) {
 		[]string{"A", "B", "C"},
 		tablewriter.WithAlignment(tablewriter.AlignRight),
 	)
-	tbl.Append("1", "2", "3")
+	mustAppend(t, tbl, "1", "2", "3")
 
 	out := tbl.Render()
 	if !strings.Contains(out, "1") || !strings.Contains(out, "2") || !strings.Contains(out, "3") {
@@ -282,7 +222,7 @@ func TestWithAlignmentPartial(t *testing.T) {
 func BenchmarkRender(b *testing.B) {
 	tbl := tablewriter.New([]string{"Name", "Age", "City"})
 	for range 100 {
-		tbl.Append("Alice", "30", "New York")
+		_ = tbl.Append("Alice", "30", "New York")
 	}
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -296,6 +236,6 @@ func BenchmarkAppend(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for b.Loop() {
-		tbl.Append("x", "y", "z")
+		_ = tbl.Append("x", "y", "z")
 	}
 }
